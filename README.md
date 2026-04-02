@@ -20,8 +20,6 @@ Este repositório reúne uma coleção de bots independentes, cada um desenvolvi
 
 ## 📧 BotPO — Automação de E-mails Outlook
 
-**Pasta:** [`/PO`](./PO)
-
 Bot desenvolvido para **monitorar automaticamente uma caixa de e-mails Outlook/Exchange**, extrair dados estruturados das mensagens e gerar relatórios consolidados em PDF.
 
 **Principais funcionalidades:**
