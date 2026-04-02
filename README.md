@@ -30,7 +30,7 @@ Bot desenvolvido para **monitorar automaticamente uma caixa de e-mails Outlook/E
 - 📄 Geração de relatórios em PDF com timestamp
 - 📝 Sistema de logs completo por execução
 
-➡️ [Ver documentação completa do BotPO](./PO/README.md)
+➡️ [Ver documentação completa do BotPO](./PO)
 
 
 
