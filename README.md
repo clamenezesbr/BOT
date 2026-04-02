@@ -14,11 +14,11 @@ Este repositório reúne uma coleção de bots independentes, cada um desenvolvi
 
 | Bot | Pasta | Descrição | Status |
 |-----|-------|-----------|--------|
-| 📧 BotPO | [`/PO`](./PO) | Automação de leitura e extração de dados de e-mails Outlook | ✅ Ativo |
+| 🤖⚙️ BotPO | [`/PO`](./PO) | Automação de leitura e extração de dados de e-mails Outlook | ✅ Ativo |
 
 ---
 
-## 📧 BotPO — Automação de E-mails Outlook
+## 🤖⚙️ BotPO — Automação de E-mails Outlook
 
 Bot desenvolvido para **monitorar automaticamente uma caixa de e-mails Outlook/Exchange**, extrair dados estruturados das mensagens e gerar relatórios consolidados em PDF.
 
