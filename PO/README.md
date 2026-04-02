@@ -80,8 +80,7 @@ pip install -r requirements.txt
 
 1. **Clone o repositório:**
 ```bash
-git clone https://github.com/seu-usuario/LeitorDeEmail.git
-cd LeitorDeEmail
+git clone https://github.com/clamenezesbr/BOT/PO.git
 ```
 
 2. **Execute o bot extrator** para capturar e processar os e-mails:
