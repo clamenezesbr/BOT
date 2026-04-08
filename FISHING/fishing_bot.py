@@ -217,13 +217,13 @@ def _press_key(vk: int) -> None:
 
 def fishing_again() -> None:
     time.sleep(4.0)
-    _press_key(0x45); _press_key(0x45)   # E → E
+    _press_key(0x45)   # E
 
     time.sleep(3.5)
-    _press_key(0x34); _press_key(0x34)   # 4 → 4
+    _press_key(0x34)   # 4
 
     time.sleep(1.7)
-    _press_key(0x45); _press_key(0x45)   # E → E
+    _press_key(0x45)   # E
 
 
 # ──────────────────────────────────────────────────────────────
