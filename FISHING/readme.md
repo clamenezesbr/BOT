@@ -26,10 +26,36 @@ Ideal para farm contínuo de itens de pesca em servidores RP sem necessidade de 
 ## 🗂️ Estrutura do Projeto
 
 ```
-FishingBot/
+Fishing/
 │
-└── 📄 fishing_bot.py       # Script principal — captura, detecção, controle e debug
+├── 📄 fishing_bot.py           # Script principal — captura, detecção, controle e debug
+├── 📄 fishing_bot.spec         # Configuração do PyInstaller para geração do executável
+├── 🔨 build.bat                # Script de build automatizado (limpa e gera o .exe)
+│
+├── 📁 build/fishing_bot/       # Arquivos intermediários gerados pelo PyInstaller
+│   ├── localpycs/
+│   ├── Analysis-00.toc
+│   ├── base_library.zip
+│   ├── EXE-00.toc
+│   ├── fishing_bot.pkg
+│   ├── PKG-00.toc
+│   ├── PYZ-00.pyz
+│   ├── PYZ-00.toc
+│   ├── warn-fishing_bot.txt
+│   └── xref-fishing_bot.html
+│
+└── 📁 dist/
+    └── 🖥️ fishing_bot.exe      # Executável final (~69 MB) — distribuir apenas este
 ```
+
+### 📄 Descrição dos Arquivos
+
+| Arquivo | Função |
+|---|---|
+| `fishing_bot.py` | Código-fonte principal — contém toda a lógica de captura, detecção, controle e debug |
+| `fishing_bot.spec` | Especificação do PyInstaller — define como o `.exe` é empacotado (onefile, console, UPX) |
+| `build.bat` | Automatiza o build: limpa pastas `build/` e `dist/`, remove o `.spec` antigo e chama o PyInstaller |
+| `dist/fishing_bot.exe` | Executável standalone gerado — não requer Python instalado para rodar |
 
 ### 📄 Descrição dos Módulos Internos
 
@@ -116,6 +142,35 @@ Use este modo para calibrar `MINIGAME_REGION` e os parâmetros de cor na sua res
 
 ---
 
+## 📦 Gerar Executável (.exe)
+
+O projeto inclui um script de build para gerar um executável standalone via **PyInstaller** — sem necessidade de Python instalado na máquina de destino.
+
+### Pré-requisito
+
+```bash
+pip install pyinstaller
+```
+
+### Build
+
+Basta executar o `build.bat` na raiz do projeto:
+
+```bat
+build.bat
+```
+
+O script automaticamente:
+1. Remove as pastas `build/` e `dist/` antigas
+2. Remove o `.spec` anterior
+3. Gera um novo `fishing_bot.exe` em `dist/`
+
+> O executável gerado tem ~69 MB pois empacota todas as dependências (OpenCV, NumPy, etc.) em um único arquivo.
+
+> ⚠️ O `.exe` pode ser detectado como falso positivo por alguns antivírus devido ao uso de `SendInput` e captura de tela — isso é comportamento esperado para automação Windows.
+
+---
+
 ## 🛠️ Tecnologias Utilizadas
 
 - **Python 3** — Linguagem principal
@@ -124,6 +179,7 @@ Use este modo para calibrar `MINIGAME_REGION` e os parâmetros de cor na sua res
 - **mss** — Captura de tela de alta performance thread-safe
 - **pywin32 / ctypes** — Movimentação de cursor e envio de teclas via WinAPI (`SendInput`)
 - **keyboard** — Registro de hotkeys globais
+- **PyInstaller** — Empacotamento em executável standalone `.exe`
 
 ---
 
