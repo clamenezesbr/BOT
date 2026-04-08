@@ -28,24 +28,8 @@ Ideal para farm contínuo de itens de pesca em servidores RP sem necessidade de 
 ```
 Fishing/
 │
-├── 📄 fishing_bot.py           # Script principal — captura, detecção, controle e debug
-├── 📄 fishing_bot.spec         # Configuração do PyInstaller para geração do executável
-├── 🔨 build.bat                # Script de build automatizado (limpa e gera o .exe)
-│
-├── 📁 build/fishing_bot/       # Arquivos intermediários gerados pelo PyInstaller
-│   ├── localpycs/
-│   ├── Analysis-00.toc
-│   ├── base_library.zip
-│   ├── EXE-00.toc
-│   ├── fishing_bot.pkg
-│   ├── PKG-00.toc
-│   ├── PYZ-00.pyz
-│   ├── PYZ-00.toc
-│   ├── warn-fishing_bot.txt
-│   └── xref-fishing_bot.html
-│
-└── 📁 dist/
-    └── 🖥️ fishing_bot.exe      # Executável final (~69 MB) — distribuir apenas este
+├── 🔨 build.bat            # Script de build automatizado (limpa e gera o .exe)
+└── 📄 fishing_bot.py       # Script principal — captura, detecção, controle e debug
 ```
 
 ### 📄 Descrição dos Arquivos
@@ -53,9 +37,7 @@ Fishing/
 | Arquivo | Função |
 |---|---|
 | `fishing_bot.py` | Código-fonte principal — contém toda a lógica de captura, detecção, controle e debug |
-| `fishing_bot.spec` | Especificação do PyInstaller — define como o `.exe` é empacotado (onefile, console, UPX) |
-| `build.bat` | Automatiza o build: limpa pastas `build/` e `dist/`, remove o `.spec` antigo e chama o PyInstaller |
-| `dist/fishing_bot.exe` | Executável standalone gerado — não requer Python instalado para rodar |
+| `build.bat` | Instalação completa e automatizada: instala todas as dependências via `pip`, limpa builds anteriores e gera `dist/fishing_bot.exe` via PyInstaller |
 
 ### 📄 Descrição dos Módulos Internos
 
@@ -104,15 +86,11 @@ As principais constantes ficam no topo do arquivo e podem ser ajustadas conforme
 
 ### Pré-requisitos
 
-- Python **3.8+**
+- Python **3.8+** instalado e disponível no `PATH`
 - **Windows** (obrigatório — usa WinAPI via `ctypes` e `pywin32`)
 - Resolução de tela configurada de acordo com `MINIGAME_REGION`
 
-### Instalação das dependências
-
-```bash
-pip install opencv-python numpy pyautogui mss keyboard pywin32
-```
+> 💡 Se for rodar pelo `.exe` gerado pelo `build.bat`, **não é necessário ter Python nem instalar nada** na máquina de destino.
 
 ### Execução — Modo Normal
 
@@ -144,26 +122,27 @@ Use este modo para calibrar `MINIGAME_REGION` e os parâmetros de cor na sua res
 
 ## 📦 Gerar Executável (.exe)
 
-O projeto inclui um script de build para gerar um executável standalone via **PyInstaller** — sem necessidade de Python instalado na máquina de destino.
+O projeto inclui o `build.bat` que **faz tudo automaticamente em uma única etapa** — instala as dependências e gera o executável. Não é necessário instalar nada manualmente antes.
 
 ### Pré-requisito
 
-```bash
-pip install pyinstaller
-```
+Apenas ter o **Python 3.8+** instalado e disponível no `PATH` do sistema.
 
 ### Build
 
-Basta executar o `build.bat` na raiz do projeto:
+Dê um duplo clique no `build.bat` ou execute via terminal na raiz do projeto:
 
 ```bat
 build.bat
 ```
 
-O script automaticamente:
-1. Remove as pastas `build/` e `dist/` antigas
-2. Remove o `.spec` anterior
-3. Gera um novo `fishing_bot.exe` em `dist/`
+O script executa automaticamente na seguinte ordem:
+1. **Instala todas as dependências** via `pip` (opencv-python, numpy, pyautogui, mss, keyboard, pywin32, pyinstaller)
+2. Remove as pastas `build/` e `dist/` antigas
+3. Remove o `.spec` anterior
+4. Gera o `fishing_bot.exe` em `dist/`
+
+Ao final, o executável estará em `dist/fishing_bot.exe` — **standalone, sem necessidade de Python instalado** na máquina de destino.
 
 > O executável gerado tem ~69 MB pois empacota todas as dependências (OpenCV, NumPy, etc.) em um único arquivo.
 
