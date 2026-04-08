@@ -1,64 +1,84 @@
-# 🤖⚙️ BotPO
+# 🎣🤖 Fishing Bot
 
-> Automação inteligente para leitura, extração e acumulação de dados de e-mails via Outlook/Exchange, gerando relatórios organizados automaticamente.
+> Automação inteligente para o minigame de pesca do FiveM — detecção visual em tempo real via OpenCV com movimentação de cursor de baixa latência (~120 fps).
 
 ---
 
 ## 📌 Sobre o Projeto
 
-O **BotPO** é um sistema automatizado em Python desenvolvido para **monitorar uma caixa de e-mails Outlook/Exchange**, extrair informações relevantes das mensagens recebidas e **acumular dados estruturados** (como pontos, registros ou indicadores) gerando relatórios em PDF de forma periódica.
+O **Fishing Bot** é um bot em Python desenvolvido para **automatizar o minigame de pesca em servidores FiveM**. Ele utiliza **visão computacional** para identificar o alvo cinza do minigame em tempo real na tela, mover o cursor automaticamente até ele e, ao detectar o fim da sessão, **relançar a pescaria de forma autônoma** com a sequência de teclas correta.
 
-Ideal para cenários onde é necessário consolidar informações que chegam por e-mail de forma recorrente — como boletins do SESI, notificações de sistemas, ou qualquer fonte de dados via e-mail.
+Ideal para farm contínuo de itens de pesca em servidores RP sem necessidade de interação manual.
 
 ---
 
 ## ✨ Funcionalidades
 
-- 📥 **Leitura automática** de e-mails via Outlook/Exchange
-- 🔍 **Extração de dados** estruturados do corpo das mensagens
-- 📊 **Acumulação de pontos/registros** ao longo do tempo
-- 📄 **Geração de relatórios em PDF** com os dados consolidados
-- 🗂️ **Organização automática** de mensagens processadas
-- 📝 **Log detalhado** de todas as execuções e erros encontrados
+- 🖥️ **Captura de tela de alta performance** via `mss` com buffers pré-alocados (~120 fps)
+- 🔍 **Detecção de alvo por visão computacional** — filtro de cor cinza neutro + análise de contornos com OpenCV
+- 🖱️ **Movimentação de cursor via `SendInput`** (ctypes) — compatível com jogo em foco
+- 🔄 **Relançamento automático** da pescaria ao detectar fim do minigame
+- 🐛 **Modo debug** com janela de visualização em tempo real (máscara + contornos + alvo)
+- ⌨️ **Atalhos de teclado** para ativar/desativar e encerrar sem fechar o jogo
 
 ---
 
 ## 🗂️ Estrutura do Projeto
 
 ```
-LeitorDeEmail/
+Fishing/
 │
-├── 📁 logs/                         # Registros de execução do sistema
-│   ├── acumulador_20260330_111751.log
-│   ├── acumulador_20260330_120218.log
-│   ├── acumulador_20260330_152333.log
-│   ├── acumulador_20260330_152705.log
-│   ├── acumulador_20260330_153012.log
-│   ├── acumulador_20260330_154249.log  # Logs nomeados por data/hora de execução
-│   └── log_erros.txt                # Arquivo centralizado de erros críticos
-│
-├── 📁 Mensagens/                    # E-mails capturados e organizados
-│   └── (arquivos de mensagens processadas)
-│
-├── 📁 relatorios/                   # Relatórios gerados automaticamente em PDF
-│   ├── relatorio_20260330_121054.pdf
-│   └── relatorio_20260330_160835.pdf  # Nomeados com timestamp da geração
-│
-├── 📁 saida/                        # Dados de saída intermediários (ex: CSVs, JSONs)
-│
-└── 📁 scripts/                      # Código-fonte principal do projeto
-    ├── acumulador_sesi.py           # Lógica de acumulação e processamento de dados
-    ├── bot_extrator.py              # Bot de leitura e extração dos e-mails
-    └── leitor.py                   # Módulo central de conexão e leitura do e-mail
+├── 🔨 build.bat            # Script de build automatizado (limpa e gera o .exe)
+└── 📄 fishing_bot.py       # Script principal — captura, detecção, controle e debug
 ```
 
-### 📄 Descrição dos Scripts
+### 📄 Descrição dos Arquivos
 
 | Arquivo | Função |
 |---|---|
-| `leitor.py` | Responsável pela **conexão com o Outlook/Exchange** e recuperação das mensagens da caixa de entrada |
-| `bot_extrator.py` | Realiza o **parse e extração dos dados** relevantes do conteúdo de cada e-mail |
-| `acumulador_sesi.py` | **Consolida e acumula** os dados extraídos, gerando os relatórios em PDF na pasta `relatorios/` |
+| `fishing_bot.py` | Código-fonte principal — contém toda a lógica de captura, detecção, controle e debug |
+| `build.bat` | Instalação completa e automatizada: instala todas as dependências via `pip`, limpa builds anteriores e gera `dist/fishing_bot.exe` via PyInstaller |
+
+### 📄 Descrição dos Módulos Internos
+
+| Função / Módulo | Responsabilidade |
+|---|---|
+| `capture()` | Captura a região do minigame via `mss` de forma thread-safe, sem alocação por frame |
+| `build_mask()` | Gera máscara binária dos pixels cinza neutro usando operações NumPy totalmente in-place |
+| `find_target()` | Analisa contornos da máscara e seleciona o melhor blob por score de circularidade × área |
+| `bot_loop()` | Loop principal (~120 fps) que rastreia o alvo e aciona o relançamento automático |
+| `fishing_again()` | Executa a sequência de teclas `E → 4 → E` para reiniciar a pescaria |
+| `debug_loop()` | Exibe janela OpenCV com overlay da máscara, contornos e posição do alvo em tempo real |
+| `_send_vk()` / `_press_key()` | Envia eventos de teclado via `SendInput` da WinAPI para garantir compatibilidade com o jogo |
+
+---
+
+## ⌨️ Controles
+
+| Tecla | Ação |
+|---|---|
+| `Home` ou `L` | Ativar / Desativar o bot |
+| `F9` | Encerrar o script completamente |
+| `Q` *(modo debug)* | Fechar a janela de debug |
+
+---
+
+## ⚙️ Configurações
+
+As principais constantes ficam no topo do arquivo e podem ser ajustadas conforme a resolução e o servidor:
+
+| Parâmetro | Padrão | Descrição |
+|---|---|---|
+| `MINIGAME_REGION` | `left:1185, top:430, w:300, h:250` | Região da tela onde o minigame aparece |
+| `GRAY_MAX_CHANNEL_DIFF` | `18` | Tolerância máxima entre canais BGR para considerar um pixel cinza |
+| `GRAY_BRIGHTNESS_MIN` | `15` | Brilho mínimo do pixel alvo |
+| `GRAY_BRIGHTNESS_MAX` | `92` | Brilho máximo do pixel alvo |
+| `BLOB_AREA_MIN` | `15` | Área mínima do contorno detectado (px²) |
+| `BLOB_AREA_MAX` | `4000` | Área máxima do contorno detectado (px²) |
+| `LOOP_INTERVAL` | `0.005` | Intervalo entre frames (~120 fps) |
+| `MAX_MISS_FRAMES` | `45` | Frames sem detecção antes de considerar o minigame encerrado |
+
+> ⚠️ Se o minigame não estiver sendo detectado, ajuste `MINIGAME_REGION` para a posição correta na sua resolução de tela.
 
 ---
 
@@ -66,62 +86,84 @@ LeitorDeEmail/
 
 ### Pré-requisitos
 
-- Python **3.8+**
-- Conta **Outlook / Exchange** configurada localmente
-- Bibliotecas necessárias (instalar via pip):
+- Python **3.8+** instalado e disponível no `PATH`
+- **Windows** (obrigatório — usa WinAPI via `ctypes` e `pywin32`)
+- Resolução de tela configurada de acordo com `MINIGAME_REGION`
+
+> 💡 Se for rodar pelo `.exe` gerado pelo `build.bat`, **não é necessário ter Python nem instalar nada** na máquina de destino.
+
+### Execução — Modo Normal
 
 ```bash
-pip install -r requirements.txt
+python fishing_bot.py
 ```
 
-> ⚠️ Certifique-se de que o **Outlook está aberto e configurado** na máquina antes de executar.
+1. Com o script rodando, entre no servidor FiveM e inicie uma pescaria manualmente.
+2. Pressione **`Home`** (ou **`L`**) para ativar o bot.
+3. O bot passará a rastrear o alvo e mover o cursor automaticamente.
+4. Ao término de cada pescaria, o bot relançará sozinho com a sequência `E → 4 → E`.
+5. Pressione **`Home`** novamente para pausar, ou **`F9`** para encerrar.
 
-### Execução
+### Execução — Modo Debug
 
-1. **Clone o repositório:**
 ```bash
-git clone https://github.com/clamenezesbr/BOT/PO.git
+python fishing_bot.py --debug
 ```
 
-2. **Execute o bot extrator** para capturar e processar os e-mails:
-```bash
-python scripts/bot_extrator.py
-```
+Abre uma janela OpenCV em tempo real exibindo:
+- **Verde** — pixels detectados como cinza neutro (máscara ativa)
+- **Amarelo** — centróides de contornos dentro do intervalo de área válido
+- **Azul** — centróides fora do intervalo (descartados)
+- **Círculo verde grande** — alvo selecionado com sua posição (x, y)
 
-3. **Execute o acumulador** para consolidar os dados e gerar o relatório:
-```bash
-python scripts/acumulador_sesi.py
-```
+Use este modo para calibrar `MINIGAME_REGION` e os parâmetros de cor na sua resolução.
 
 ---
 
-## 📋 Logs e Monitoramento
+## 📦 Gerar Executável (.exe)
 
-O sistema mantém registros detalhados de cada execução:
+O projeto inclui o `build.bat` que **faz tudo automaticamente em uma única etapa** — instala as dependências e gera o executável. Não é necessário instalar nada manualmente antes.
 
-- Os arquivos em `logs/` são nomeados automaticamente com o padrão:
-  ```
-  acumulador_YYYYMMDD_HHMMSS.log
-  ```
-- O arquivo `log_erros.txt` centraliza todos os erros críticos encontrados durante as execuções, facilitando o diagnóstico de problemas.
+### Pré-requisito
 
----
+Apenas ter o **Python 3.8+** instalado e disponível no `PATH` do sistema.
 
-## 📊 Relatórios
+### Build
 
-Os relatórios gerados ficam em `relatorios/` e seguem o padrão de nomenclatura:
+Dê um duplo clique no `build.bat` ou execute via terminal na raiz do projeto:
+
+```bat
+build.bat
 ```
-relatorio_YYYYMMDD_HHMMSS.pdf
-```
-Cada relatório representa um snapshot dos dados acumulados até o momento da execução.
+
+O script executa automaticamente na seguinte ordem:
+1. **Instala todas as dependências** via `pip` (opencv-python, numpy, pyautogui, mss, keyboard, pywin32, pyinstaller)
+2. Remove as pastas `build/` e `dist/` antigas
+3. Remove o `.spec` anterior
+4. Gera o `fishing_bot.exe` em `dist/`
+
+Ao final, o executável estará em `dist/fishing_bot.exe` — **standalone, sem necessidade de Python instalado** na máquina de destino.
+
+> O executável gerado tem ~69 MB pois empacota todas as dependências (OpenCV, NumPy, etc.) em um único arquivo.
+
+> ⚠️ O `.exe` pode ser detectado como falso positivo por alguns antivírus devido ao uso de `SendInput` e captura de tela — isso é comportamento esperado para automação Windows.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
 - **Python 3** — Linguagem principal
-- **win32com / pywin32** — Integração com Outlook
-- **ReportLab / FPDF** — Geração de PDFs
-- **Logging** — Sistema de logs nativo do Python
+- **OpenCV (`cv2`)** — Detecção de contornos, morfologia e visualização debug
+- **NumPy** — Operações vetorizadas in-place para filtragem de cor sem alocação heap
+- **mss** — Captura de tela de alta performance thread-safe
+- **pywin32 / ctypes** — Movimentação de cursor e envio de teclas via WinAPI (`SendInput`)
+- **keyboard** — Registro de hotkeys globais
+- **PyInstaller** — Empacotamento em executável standalone `.exe`
 
 ---
+
+## ⚠️ Avisos
+
+- Este script foi desenvolvido para uso pessoal em servidores FiveM que permitem automação.
+- Use com responsabilidade e respeite as regras do servidor em que jogar.
+- O bot **não bypassa anti-cheats** — funciona apenas via movimentação de cursor e teclas, como um usuário normal.
