@@ -15,6 +15,7 @@ Este repositório reúne uma coleção de bots independentes, cada um desenvolvi
 | Bot | Pasta | Descrição | Status |
 |-----|-------|-----------|--------|
 | 🤖⚙️ BotPO | [`/PO`](./PO) | Automação de leitura e extração de dados de e-mails Outlook | ✅ Ativo |
+| 🎣🤖 Fishing Bot | [`/Fishing`](./FISHING) | Automação do minigame de pesca do FiveM via visão computacional | ✅ Ativo |
 
 ---
 
@@ -30,6 +31,20 @@ Bot desenvolvido para **monitorar automaticamente uma caixa de e-mails Outlook/E
 
 ➡️ [Ver documentação completa do BotPO](./PO)
 
+---
 
+## 🎣🤖 Fishing Bot — Automação de Pesca FiveM
+
+Bot desenvolvido para **automatizar o minigame de pesca em servidores FiveM**, utilizando visão computacional para rastrear o alvo em tempo real e relançar a pescaria de forma autônoma ao término de cada rodada.
+
+**Principais funcionalidades:**
+- 🖥️ Captura de tela de alta performance via `mss` (~120 fps)
+- 🔍 Detecção do alvo por filtro de cor + análise de contornos com OpenCV
+- 🖱️ Movimentação de cursor via `SendInput` (WinAPI) — compatível com jogo em foco
+- 🔄 Relançamento automático da pescaria ao detectar fim do minigame
+- 🐛 Modo debug com janela de visualização em tempo real
+- 📦 Geração de executável `.exe` standalone com um único clique no `build.bat`
+
+➡️ [Ver documentação completa do Fishing Bot](./FISHING)
 
 ---
