@@ -1,128 +1,103 @@
-# 🤖⚙️ BotPO
+# BotPO — Processador de Pedidos de Compra
 
-> Automação inteligente para leitura, extração e acumulação de dados de e-mails via Outlook/Exchange, gerando relatórios organizados automaticamente.
-
----
-
-## 📌 Sobre o Projeto
-
-O **BotPO** é um sistema automatizado em Python desenvolvido para **monitorar uma caixa de e-mails Outlook/Exchange**, extrair informações relevantes das mensagens recebidas e **acumular dados estruturados** (como pontos, registros ou indicadores) gerando relatórios em PDF de forma periódica.
-
-Ideal para cenários onde é necessário consolidar informações que chegam por e-mail de forma recorrente — como boletins do SESI, notificações de sistemas, ou qualquer fonte de dados via e-mail.
+Automação RPA em Python para extrair, consolidar e exportar dados de Pedidos de Compra a partir de emails Outlook (`.msg`).  
+Disponível em duas interfaces: **web** (recomendada) e **CLI**.
 
 ---
 
-## ✨ Funcionalidades
+## Como funciona
 
-- 📥 **Leitura automática** de e-mails via Outlook/Exchange
-- 🔍 **Extração de dados** estruturados do corpo das mensagens
-- 📊 **Acumulação de pontos/registros** ao longo do tempo
-- 📄 **Geração de relatórios em PDF** com os dados consolidados
-- 🗂️ **Organização automática** de mensagens processadas
-- 📝 **Log detalhado** de todas as execuções e erros encontrados
+O pipeline executa três etapas em sequência:
 
----
-
-## 🗂️ Estrutura do Projeto
-
-```
-LeitorDeEmail/
-│
-├── 📁 logs/                         # Registros de execução do sistema
-│   ├── acumulador_20260330_111751.log
-│   ├── acumulador_20260330_120218.log
-│   ├── acumulador_20260330_152333.log
-│   ├── acumulador_20260330_152705.log
-│   ├── acumulador_20260330_153012.log
-│   ├── acumulador_20260330_154249.log  # Logs nomeados por data/hora de execução
-│   └── log_erros.txt                # Arquivo centralizado de erros críticos
-│
-├── 📁 Mensagens/                    # E-mails capturados e organizados
-│   └── (arquivos de mensagens processadas)
-│
-├── 📁 relatorios/                   # Relatórios gerados automaticamente em PDF
-│   ├── relatorio_20260330_121054.pdf
-│   └── relatorio_20260330_160835.pdf  # Nomeados com timestamp da geração
-│
-├── 📁 saida/                        # Dados de saída intermediários (ex: CSVs, JSONs)
-│
-└── 📁 scripts/                      # Código-fonte principal do projeto
-    ├── acumulador_sesi.py           # Lógica de acumulação e processamento de dados
-    ├── bot_extrator.py              # Bot de leitura e extração dos e-mails
-    └── leitor.py                   # Módulo central de conexão e leitura do e-mail
-```
-
-### 📄 Descrição dos Scripts
-
-| Arquivo | Função |
-|---|---|
-| `leitor.py` | Responsável pela **conexão com o Outlook/Exchange** e recuperação das mensagens da caixa de entrada |
-| `bot_extrator.py` | Realiza o **parse e extração dos dados** relevantes do conteúdo de cada e-mail |
-| `acumulador_sesi.py` | **Consolida e acumula** os dados extraídos, gerando os relatórios em PDF na pasta `relatorios/` |
+| Etapa | O que faz | Saída |
+|-------|-----------|-------|
+| **1 — Extração de PDFs** | Abre cada `.msg` e extrai os anexos PDF | `temp_pdfs/` |
+| **2 — Mapeamento de produtos** | Lê os PDFs e mapeia ID (7 dígitos) → Nome do produto | `output/mapeamento_produtos.csv` |
+| **3 — Consolidação e Excel** | Cruza IDs, POs e quantidades; gera tabela pivot estilizada | `output/consolidado_pedidos.xlsx` |
 
 ---
 
-## 🚀 Como Usar
-
-### Pré-requisitos
-
-- Python **3.8+**
-- Conta **Outlook / Exchange** configurada localmente
-- Bibliotecas necessárias (instalar via pip):
+## Interface Web (recomendada)
 
 ```bash
-pip install -r requirements.txt
+python app.py
 ```
 
-> ⚠️ Certifique-se de que o **Outlook está aberto e configurado** na máquina antes de executar.
+O navegador abre automaticamente em `http://localhost:5000`.
 
-### Execução
+**Fluxo:**
+1. Arraste ou selecione os arquivos `.msg`
+2. Clique em **Processar** — o progresso de cada etapa aparece em tempo real
+3. Baixe o relatório Excel ao final
 
-1. **Clone o repositório:**
+> Não é necessário configurar nada. O servidor roda localmente na porta 5000.
+
+---
+
+## Interface CLI
+
 ```bash
-git clone https://github.com/seu-usuario/LeitorDeEmail.git
-cd LeitorDeEmail
+python main.py
 ```
 
-2. **Execute o bot extrator** para capturar e processar os e-mails:
+Ao final do pipeline, o sistema pergunta se deseja arquivar o lote em `archives/`.
+
+---
+
+## Estrutura do projeto
+
+```
+PO/
+├── app.py                        # Servidor web Flask (interface principal)
+├── main.py                       # Orquestrador CLI
+├── extractor_msg.py              # Etapa 1: extrai PDFs dos .msg
+├── extractor_ids.py              # Etapa 2: mapeia ID → Nome de produto
+├── extractor_quantidades.py      # Etapa 3: consolida quantidades e gera Excel
+├── archiver.py                   # Arquivamento de lotes (CLI)
+├── templates/
+│   └── index.html                # Página única da interface web
+├── input_msgs/                   # ← coloque os .msg aqui (ignorado pelo git)
+├── temp_pdfs/                    # PDFs extraídos (ignorado pelo git)
+└── output/                       # Relatórios gerados (ignorado pelo git)
+```
+
+---
+
+## Dependências
+
 ```bash
-python scripts/bot_extrator.py
+python -m pip install flask extract-msg PyMuPDF pandas openpyxl tqdm
 ```
 
-3. **Execute o acumulador** para consolidar os dados e gerar o relatório:
-```bash
-python scripts/acumulador_sesi.py
-```
+| Pacote | Uso |
+|--------|-----|
+| `flask` | Servidor web da interface |
+| `extract-msg` | Leitura de arquivos `.msg` do Outlook |
+| `PyMuPDF` | Extração de texto dos PDFs |
+| `pandas` | Pivot table e consolidação de dados |
+| `openpyxl` | Geração e estilização do Excel |
+| `tqdm` | Barras de progresso no CLI |
 
 ---
 
-## 📋 Logs e Monitoramento
+## Formato do Excel gerado
 
-O sistema mantém registros detalhados de cada execução:
+| Coluna | Conteúdo |
+|--------|----------|
+| **PRODUTO** | Nome do produto |
+| **TOTAL** | Soma de todos os POs |
+| **PO-XXXXX** | Quantidade por Pedido de Compra |
 
-- Os arquivos em `logs/` são nomeados automaticamente com o padrão:
-  ```
-  acumulador_YYYYMMDD_HHMMSS.log
-  ```
-- O arquivo `log_erros.txt` centraliza todos os erros críticos encontrados durante as execuções, facilitando o diagnóstico de problemas.
-
----
-
-## 📊 Relatórios
-
-Os relatórios gerados ficam em `relatorios/` e seguem o padrão de nomenclatura:
-```
-relatorio_YYYYMMDD_HHMMSS.pdf
-```
-Cada relatório representa um snapshot dos dados acumulados até o momento da execução.
+Produtos sem quantidade em determinado PO recebem valor `0`.  
+Cabeçalho azul escuro, linhas alternadas, colunas com largura ajustada e painéis congelados.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## Padrões reconhecidos nos PDFs
 
-- **Python 3** — Linguagem principal
-- **win32com / pywin32** — Integração com Outlook
-- **ReportLab / FPDF** — Geração de PDFs
-- **Logging** — Sistema de logs nativo do Python
+Os PDFs devem conter:
+- **Número do PO:** `Nº do Pedido: 12345`
+- **ID do produto:** código de 7 dígitos (ex: `7004434`)
+- **Quantidade:** linha com `dd.mm.aaaa  QTD  UN`
 
----
+O mapeamento ID → Nome suporta três formatos de layout (bloco, inline com traço e tabela).
