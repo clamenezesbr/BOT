@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Processador de Pedidos de Compra</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-dark:    #1F4E79;
+      --blue-mid:     #2E75B6;
+      --blue-light:   #BDD7EE;
+      --blue-pale:    #EFF6FC;
+      --green:        #1A7A3C;
+      --green-light:  #D4EDDA;
+      --red:          #B91C1C;
+      --red-light:    #FEE2E2;
+      --amber:        #B45309;
+      --amber-light:  #FEF3C7;
+      --gray-1:       #F8F9FA;
+      --gray-2:       #E9ECEF;
+      --gray-3:       #DEE2E6;
+      --gray-5:       #9CA3AF;
+      --gray-7:       #374151;
+      --gray-9:       #111827;
+      --radius:       12px;
+      --shadow:       0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.06);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #F0F4F8;
+      color: var(--gray-9);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1rem 5rem;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      max-width: 640px;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px; height: 52px;
+      background: var(--blue-dark);
+      border-radius: 14px;
+      margin-bottom: .85rem;
+      box-shadow: 0 4px 12px rgba(31,78,121,.35);
+    }
+    header h1 {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--blue-dark);
+      letter-spacing: -.4px;
+    }
+    header p {
+      color: var(--gray-5);
+      font-size: .875rem;
+      margin-top: .35rem;
+      line-height: 1.5;
+    }
+
+    /* ── Card ────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.6rem 1.75rem;
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 1rem;
+    }
+
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--gray-5);
+      margin-bottom: 1.1rem;
+    }
+    .section-label .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px; height: 20px;
+      background: var(--blue-dark);
+      color: #fff;
+      border-radius: 50%;
+      font-size: .7rem;
+    }
+
+    /* ── Drop Zone ───────────────────────────────────────────── */
+    #drop-zone {
+      border: 2px dashed var(--gray-3);
+      border-radius: 10px;
+      padding: 2.2rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 150ms, background 150ms;
+      user-select: none;
+      position: relative;
+    }
+    #drop-zone:hover,
+    #drop-zone.drag-over {
+      border-color: var(--blue-mid);
+      background: var(--blue-pale);
+    }
+    #drop-zone .icon { color: var(--gray-5); margin-bottom: .7rem; }
+    #drop-zone .main-text {
+      font-size: .95rem;
+      color: var(--gray-7);
+      font-weight: 500;
+    }
+    #drop-zone .sub-text {
+      font-size: .8rem;
+      color: var(--gray-5);
+      margin-top: .3rem;
+    }
+    #drop-zone .browse-link {
+      color: var(--blue-mid);
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    #file-input { display: none; }
+
+    /* ── File List ───────────────────────────────────────────── */
+    .file-list-header {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      margin-top: 1.1rem;
+      margin-bottom: .5rem;
+    }
+    .file-list-header span {
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--gray-5);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px; height: 22px;
+      padding: 0 6px;
+      background: var(--blue-dark);
+      color: #fff;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+
+    #file-list { list-style: none; }
+    #file-list li {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .5rem .6rem;
+      border-radius: 7px;
+      font-size: .855rem;
+      color: var(--gray-7);
+      transition: background 120ms;
+    }
+    #file-list li:hover { background: var(--gray-1); }
+    #file-list .fname {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    #file-list .remove-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--gray-5);
+      padding: .25rem;
+      border-radius: 5px;
+      line-height: 1;
+      transition: color 120ms, background 120ms;
+      flex-shrink: 0;
+    }
+    #file-list .remove-btn:hover { color: var(--red); background: var(--red-light); }
+    .empty-hint {
+      text-align: center;
+      color: var(--gray-5);
+      font-size: .83rem;
+      padding: .9rem;
+      font-style: italic;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: .65rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      font-size: .88rem;
+      font-weight: 600;
+      padding: .58rem 1.15rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 150ms, transform 100ms, background 150ms;
+      letter-spacing: -.01em;
+    }
+    button:active:not(:disabled) { transform: scale(.97); }
+    button:disabled { opacity: .4; cursor: not-allowed; transform: none !important; }
+
+    .btn-primary { background: var(--blue-dark); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #17406A; }
+    .btn-ghost   { background: var(--gray-2); color: var(--gray-7); }
+    .btn-ghost:hover:not(:disabled) { background: var(--gray-3); }
+    .btn-success { background: var(--green); color: #fff; font-size: .92rem; padding: .65rem 1.4rem; }
+    .btn-success:hover:not(:disabled) { background: #155E30; }
+
+    /* ── Status Banner ───────────────────────────────────────── */
+    #status-banner {
+      display: none;
+      padding: .7rem 1rem;
+      border-radius: 8px;
+      font-size: .855rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      line-height: 1.45;
+    }
+    #status-banner.info    { background: var(--blue-pale);   color: var(--blue-dark); }
+    #status-banner.success { background: var(--green-light); color: var(--green); }
+    #status-banner.error   { background: var(--red-light);   color: var(--red); }
+
+    /* ── Pipeline Steps ──────────────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: .55rem; }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: .85rem;
+      padding: .85rem 1rem;
+      border-radius: 9px;
+      background: var(--gray-1);
+      border: 1.5px solid var(--gray-2);
+      transition: background 200ms, border-color 200ms;
+    }
+    .step.running { background: var(--amber-light); border-color: #D97706; }
+    .step.done    { background: var(--green-light);  border-color: #16A34A; }
+    .step.error   { background: var(--red-light);    border-color: #DC2626; }
+
+    .step-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: .85rem;
+      font-weight: 700;
+      background: var(--gray-3);
+      color: var(--gray-5);
+      transition: background 200ms, color 200ms;
+    }
+    .step.running .step-icon {
+      background: #D97706;
+      color: #fff;
+      animation: spin 1s linear infinite;
+    }
+    .step.done  .step-icon { background: #16A34A; color: #fff; }
+    .step.error .step-icon { background: #DC2626; color: #fff; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .step-body { flex: 1; min-width: 0; }
+    .step-label {
+      font-size: .855rem;
+      font-weight: 600;
+      color: var(--gray-9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .step-detail {
+      font-size: .78rem;
+      color: var(--gray-5);
+      margin-top: .15rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .step.running .step-detail { color: #92400E; }
+    .step.done    .step-detail { color: #166534; }
+    .step.error   .step-detail { color: var(--red); }
+
+    .step-elapsed {
+      font-size: .75rem;
+      color: var(--gray-5);
+      white-space: nowrap;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Download Card ───────────────────────────────────────── */
+    #download-card {
+      text-align: center;
+      padding: 2rem 1.75rem;
+    }
+    #download-card .dl-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px; height: 56px;
+      background: var(--green-light);
+      border-radius: 50%;
+      margin-bottom: 1rem;
+      color: var(--green);
+    }
+    #download-card h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gray-9);
+      margin-bottom: .4rem;
+    }
+    #download-card p {
+      font-size: .855rem;
+      color: var(--gray-5);
+      margin-bottom: 1.35rem;
+    }
+    #download-card a { text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="28" height="28" fill="none" stroke="#fff" stroke-width="1.8" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+    </svg>
+  </div>
+  <h1>Processador de Pedidos de Compra</h1>
+  <p>Carregue seus arquivos .msg e execute o pipeline completo com um clique</p>
+</header>
+
+<!-- ── Card 1: Upload ─────────────────────────────────────────────────── -->
+<div class="card">
+  <div class="section-label">
+    <span class="num">1</span>
+    Carregar arquivos .msg
+  </div>
+
+  <div id="drop-zone" role="button" tabindex="0"
+       aria-label="Área de upload — arraste arquivos .msg ou clique para selecionar">
+    <div class="icon">
+      <svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
+      </svg>
+    </div>
+    <p class="main-text">Arraste e solte arquivos <strong>.msg</strong> aqui</p>
+    <p class="sub-text">ou <span class="browse-link" id="browse-link">clique para selecionar</span></p>
+  </div>
+  <input type="file" id="file-input" accept=".msg" multiple />
+
+  <div class="file-list-header">
+    <span>Arquivos carregados</span>
+    <span class="badge" id="file-count">0</span>
+  </div>
+  <ul id="file-list">
+    <li class="empty-hint">Nenhum arquivo carregado ainda</li>
+  </ul>
+</div>
+
+<!-- ── Card 2: Pipeline ───────────────────────────────────────────────── -->
+<div class="card">
+  <div class="section-label">
+    <span class="num">2</span>
+    Processar pipeline
+  </div>
+
+  <div id="status-banner" role="status" aria-live="polite"></div>
+
+  <div class="btn-row">
+    <button class="btn-primary" id="process-btn" disabled>
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"/>
+      </svg>
+      Processar
+    </button>
+    <button class="btn-ghost" id="reset-btn">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+      </svg>
+      Limpar tudo
+    </button>
+  </div>
+
+  <div class="steps" id="steps-container">
+    <!-- Step 1 -->
+    <div class="step" id="step-1">
+      <div class="step-icon">1</div>
+      <div class="step-body">
+        <div class="step-label">Extração de PDFs dos emails</div>
+        <div class="step-detail">Aguardando...</div>
+      </div>
+      <div class="step-elapsed"></div>
+    </div>
+    <!-- Step 2 -->
+    <div class="step" id="step-2">
+      <div class="step-icon">2</div>
+      <div class="step-body">
+        <div class="step-label">Mapeamento de produtos (ID → Nome)</div>
+        <div class="step-detail">Aguardando...</div>
+      </div>
+      <div class="step-elapsed"></div>
+    </div>
+    <!-- Step 3 -->
+    <div class="step" id="step-3">
+      <div class="step-icon">3</div>
+      <div class="step-body">
+        <div class="step-label">Consolidação de quantidades e Excel</div>
+        <div class="step-detail">Aguardando...</div>
+      </div>
+      <div class="step-elapsed"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Card 3: Download ───────────────────────────────────────────────── -->
+<div class="card" id="download-card" style="display:none;">
+  <div class="dl-icon">
+    <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+    </svg>
+  </div>
+  <h2>Pipeline concluído!</h2>
+  <p>O relatório foi gerado e está pronto para download.</p>
+  <a href="/download">
+    <button class="btn-success">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+      </svg>
+      Baixar consolidado_pedidos.xlsx
+    </button>
+  </a>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let fileList = [];
+  let processing = false;
+
+  // ── DOM ────────────────────────────────────────────────────────────────────
+  const dropZone    = document.getElementById('drop-zone');
+  const fileInput   = document.getElementById('file-input');
+  const browseLink  = document.getElementById('browse-link');
+  const fileListEl  = document.getElementById('file-list');
+  const fileCountEl = document.getElementById('file-count');
+  const processBtn  = document.getElementById('process-btn');
+  const resetBtn    = document.getElementById('reset-btn');
+  const banner      = document.getElementById('status-banner');
+  const dlCard      = document.getElementById('download-card');
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  refreshFileList();
+
+  // ── Drop Zone ──────────────────────────────────────────────────────────────
+  browseLink.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+  dropZone.addEventListener('dragover',  (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('dragend',   () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    uploadFiles([...e.dataTransfer.files]);
+  });
+  fileInput.addEventListener('change', () => {
+    uploadFiles([...fileInput.files]);
+    fileInput.value = '';
+  });
+
+  // ── Upload ─────────────────────────────────────────────────────────────────
+  async function uploadFiles(files) {
+    const msgFiles = files.filter(f => f.name.toLowerCase().endsWith('.msg'));
+    if (!msgFiles.length) {
+      showBanner('Somente arquivos .msg são aceitos.', 'error');
+      return;
+    }
+    const fd = new FormData();
+    msgFiles.forEach(f => fd.append('files', f));
+    try {
+      const res  = await fetch('/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.errors && data.errors.length) showBanner(data.errors.join(' | '), 'error');
+      await refreshFileList();
+    } catch {
+      showBanner('Erro ao enviar arquivos. Verifique a conexão com o servidor.', 'error');
+    }
+  }
+
+  // ── File List ──────────────────────────────────────────────────────────────
+  async function refreshFileList() {
+    const res  = await fetch('/files');
+    const data = await res.json();
+    fileList = data.files;
+    renderFileList();
+    syncButtons();
+  }
+
+  function renderFileList() {
+    fileCountEl.textContent = fileList.length;
+    if (!fileList.length) {
+      fileListEl.innerHTML = '<li class="empty-hint">Nenhum arquivo carregado ainda</li>';
+      return;
+    }
+    fileListEl.innerHTML = fileList.map(name => `
+      <li>
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"
+             viewBox="0 0 24 24" style="flex-shrink:0;color:var(--blue-mid)">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z"/>
+        </svg>
+        <span class="fname" title="${esc(name)}">${esc(name)}</span>
+        <button class="remove-btn" onclick="removeFile('${esc(name)}')" title="Remover arquivo">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </li>
+    `).join('');
+  }
+
+  async function removeFile(name) {
+    await fetch('/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    await refreshFileList();
+  }
+
+  // ── Pipeline ───────────────────────────────────────────────────────────────
+  function syncButtons() {
+    processBtn.disabled = fileList.length === 0 || processing;
+    resetBtn.disabled   = processing;
+  }
+
+  processBtn.addEventListener('click', startProcessing);
+
+  function startProcessing() {
+    if (processing) return;
+    processing = true;
+    syncButtons();
+    dlCard.style.display = 'none';
+    hideBanner();
+    resetSteps();
+
+    const source = new EventSource('/process');
+
+    source.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+
+      if (msg.type === 'start') {
+        showBanner(`Processando ${msg.total_files} arquivo(s) .msg…`, 'info');
+      }
+
+      if (msg.type === 'stage') {
+        updateStep(msg.stage, msg.status, msg.message, msg.elapsed);
+      }
+
+      if (msg.type === 'error') {
+        showBanner(msg.message, 'error');
+        finish(source, false);
+      }
+
+      if (msg.type === 'done') {
+        if (msg.success) {
+          showBanner('Pipeline concluído com sucesso!', 'success');
+          dlCard.style.display = 'block';
+          setTimeout(() => dlCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+        } else {
+          showBanner('Pipeline finalizado com erro. Verifique os detalhes acima.', 'error');
+        }
+        finish(source, true);
+      }
+    };
+
+    source.onerror = () => {
+      showBanner('Erro de conexão com o servidor.', 'error');
+      finish(source, true);
+    };
+  }
+
+  function finish(source, closeIt) {
+    if (closeIt) source.close();
+    processing = false;
+    syncButtons();
+  }
+
+  // ── Steps ──────────────────────────────────────────────────────────────────
+  function resetSteps() {
+    [1, 2, 3].forEach(n => {
+      const el = document.getElementById(`step-${n}`);
+      el.className = 'step';
+      el.querySelector('.step-detail').textContent = 'Aguardando...';
+      el.querySelector('.step-elapsed').textContent = '';
+      el.querySelector('.step-icon').textContent = String(n);
+    });
+  }
+
+  function updateStep(stage, status, message, elapsed) {
+    const el   = document.getElementById(`step-${stage}`);
+    el.className = `step ${status}`;
+    el.querySelector('.step-detail').textContent  = message || '';
+    el.querySelector('.step-elapsed').textContent = elapsed || '';
+    const icon = el.querySelector('.step-icon');
+    if      (status === 'running') icon.textContent = '↻';
+    else if (status === 'done')    icon.textContent = '✓';
+    else if (status === 'error')   icon.textContent = '✕';
+    else                           icon.textContent = String(stage);
+  }
+
+  // ── Reset ──────────────────────────────────────────────────────────────────
+  resetBtn.addEventListener('click', async () => {
+    if (!confirm('Limpar todos os arquivos carregados e resultados anteriores?')) return;
+    await fetch('/reset', { method: 'POST' });
+    await refreshFileList();
+    resetSteps();
+    hideBanner();
+    dlCard.style.display = 'none';
+  });
+
+  // ── Banner ─────────────────────────────────────────────────────────────────
+  function showBanner(msg, type) {
+    banner.textContent = msg;
+    banner.className   = type;
+    banner.style.display = 'block';
+  }
+  function hideBanner() {
+    banner.style.display = 'none';
+  }
+
+  // ── Utils ──────────────────────────────────────────────────────────────────
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+
+</body>
+</html>
